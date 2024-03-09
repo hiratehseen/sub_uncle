@@ -206,10 +206,10 @@ class TextToSpeechService(AIModelService):
             audio_data = speech_tensor / torch.max(torch.abs(speech_tensor))
 
             # Convert to 32-bit PCM
-            audio_data_int = (audio_data * 2147483647).type(torch.IntTensor)
+            audio_data_int_ = (audio_data * 2147483647).type(torch.IntTensor)
 
             # Add an extra dimension to make it a 2D tensor
-            audio_data_int = audio_data_int.unsqueeze(0)
+            audio_data_int = audio_data_int_.unsqueeze(0)
 
             # Save the audio data as a .wav file
             if self.islocaltts:
@@ -232,7 +232,7 @@ class TextToSpeechService(AIModelService):
                 sampling_rate = 44000
             else:
                 sampling_rate = 16000
-            torchaudio.save(output_path, src=audio_data_int, sample_rate=sampling_rate)
+            torchaudio.save(output_path, src=audio_data_int_, sample_rate=sampling_rate)
             print(f"Saved audio file to {output_path}")
             wandb.log({"whale songs": wandb.Audio(np.array(audio_data_int), caption=f'{axon.hotkey}', sample_rate=sampling_rate)})
             # Score the output and update the weights

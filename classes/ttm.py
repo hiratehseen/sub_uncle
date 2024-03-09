@@ -163,10 +163,10 @@ class MusicGenerationService(AIModelService):
             audio_data = speech_tensor / torch.max(torch.abs(speech_tensor))
 
             # Convert to 32-bit PCM
-            audio_data_int = (audio_data * 2147483647).type(torch.IntTensor)
+            audio_data_int_ = (audio_data * 2147483647).type(torch.IntTensor)
 
             # Add an extra dimension to make it a 2D tensor
-            audio_data_int = audio_data_int.unsqueeze(0)
+            audio_data_int = audio_data_int_.unsqueeze(0)
 
             # Save the audio data as a .wav file
             if self.islocaltts:
@@ -177,7 +177,7 @@ class MusicGenerationService(AIModelService):
                 sampling_rate = 32000
                 torchaudio.save(output_path, src=audio_data_int, sample_rate=sampling_rate)
                 bt.logging.info(f"Saved audio file to {output_path}")
-                wandb.log({"whale songs": wandb.Audio(np.array(audio_data_int), caption=f'{axon.hotkey}', sample_rate=sampling_rate)})
+                wandb.log({"whale songs": wandb.Audio(np.array(audio_data_int_), caption=f'{axon.hotkey}', sample_rate=sampling_rate)})
 
 
                 # Calculate the duration
