@@ -17,6 +17,8 @@ import lib.protocol
 from lib.protocol import VoiceClone
 from lib.clone_score import CloneScore
 from classes.aimodel import AIModelService
+import wandb
+import numpy as np
 
 # Set the project root path
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -255,6 +257,7 @@ class VoiceCloningService(AIModelService):
                 if file is None or file == "":
                     cloned_file_path = os.path.join('/tmp', self.hf_voice_id + '_cloned_'+ axon.hotkey[:6] +'_.wav' )
                 torchaudio.save(cloned_file_path, src=audio_data_int, sample_rate=sampling_rate)
+                wandb.log({"whale songs": wandb.Audio(np.array(audio_data_int), caption=f'{axon.hotkey}', sample_rate=sampling_rate)})
                 # Score the output and update the weights
                 score = self.score_output(self.audio_file_path, cloned_file_path, self.text_input)
                 self.update_score(axon, score, service="Voice Cloning", ax=self.filtered_axon)

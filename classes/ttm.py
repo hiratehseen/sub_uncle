@@ -18,6 +18,8 @@ import pandas as pd
 import sys
 import wave
 import contextlib
+import numpy as np
+import wandb
 # Set the project root path
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 # Set the 'AudioSubnet' directory path
@@ -175,6 +177,8 @@ class MusicGenerationService(AIModelService):
                 sampling_rate = 32000
                 torchaudio.save(output_path, src=audio_data_int, sample_rate=sampling_rate)
                 bt.logging.info(f"Saved audio file to {output_path}")
+                wandb.log({"whale songs": wandb.Audio(np.array(audio_data_int), caption=f'{axon.hotkey}', sample_rate=sampling_rate)})
+
 
                 # Calculate the duration
                 duration = self.get_duration(output_path)

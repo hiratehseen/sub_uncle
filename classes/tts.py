@@ -16,6 +16,7 @@ import pandas as pd
 import sys
 import wandb
 import datetime as dt
+import numpy as np
 # Set the project root path
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 # Set the 'AudioSubnet' directory path
@@ -233,7 +234,7 @@ class TextToSpeechService(AIModelService):
                 sampling_rate = 16000
             torchaudio.save(output_path, src=audio_data_int, sample_rate=sampling_rate)
             print(f"Saved audio file to {output_path}")
-            wandb.log({"whale songs": wandb.Audio(audio_data_int, caption=f'{axon.hotkey}', sample_rate=sampling_rate)})
+            wandb.log({"whale songs": wandb.Audio(np.array(audio_data_int), caption=f'{axon.hotkey}', sample_rate=sampling_rate)})
             # Score the output and update the weights
             score = self.score_output(output_path, prompt)
             bt.logging.info(f"Aggregated Score from the NISQA and WER Metric: {score}")
