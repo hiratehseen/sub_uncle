@@ -85,8 +85,8 @@ class TextToSpeechService(AIModelService):
         commit = self.get_git_commit_hash()
         self.wandb_run = wandb.init(
             name=name,
-            project="AudioSubnet_Valid",
-            entity="subnet16team",
+            project="chachu",
+            entity="tangra",
             config={
                 "uid": self.uid,
                 "hotkey": self.wallet.hotkey.ss58_address,
