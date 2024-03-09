@@ -357,7 +357,7 @@ class TextToSpeechService(AIModelService):
             )
 
             if result:
-                bt.logging.success('Successfully set weights.')
+                bt.logging.success('Successfully set weights. result: {result}')
             else:
                 bt.logging.error('Failed to set weights.')
         except Exception as e:
