@@ -92,7 +92,7 @@ class VoiceCloningService(AIModelService):
                 print(f"An error occurred in VoiceCloneService: {e}")
                 traceback.print_exc()
     async def process_huggingface_prompts(self, step):
-        if step % 3 == 0:
+        if step % 45 == 0:
             async with self.lock:
                 bt.logging.info(f"--------------------------------- Prompt and voices are being used from HuggingFace Dataset for Voice Clone at Step: {step} ---------------------------------")
                 self.filename = ""
