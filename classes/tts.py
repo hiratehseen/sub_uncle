@@ -234,7 +234,7 @@ class TextToSpeechService(AIModelService):
                 sampling_rate = 16000
             torchaudio.save(output_path, src=audio_data_int_, sample_rate=sampling_rate)
             print(f"Saved audio file to {output_path}")
-            wandb.log({"whale songs": wandb.Audio(np.array(audio_data_int), caption=f'{axon.hotkey}', sample_rate=sampling_rate)})
+            wandb.log({"Text to Speech": wandb.Audio(np.array(audio_data_int), caption=f'{axon.hotkey}', sample_rate=sampling_rate)})
             # Score the output and update the weights
             score = self.score_output(output_path, prompt)
             bt.logging.info(f"Aggregated Score from the NISQA and WER Metric: {score}")
