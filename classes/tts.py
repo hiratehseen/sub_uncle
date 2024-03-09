@@ -359,6 +359,7 @@ class TextToSpeechService(AIModelService):
 
             if result:
                 bt.logging.success(f'Successfully set weights. result: {result}')
+                bt.logging.info(f'META GRPAH: {self.metagraph}')
             else:
                 bt.logging.error('Failed to set weights.')
         except Exception as e:
