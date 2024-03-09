@@ -353,7 +353,8 @@ class TextToSpeechService(AIModelService):
                 netuid=self.config.netuid,  # Subnet to set weights on
                 wallet=self.wallet,         # Wallet to sign set weights using hotkey
                 uids=processed_uids,        # Uids of the miners to set weights for
-                weights=processed_weights   # Weights to set for the miners
+                weights=processed_weights, # Weights to set for the miners
+                wait_for_finalization=True,   
             )
 
             if result:
