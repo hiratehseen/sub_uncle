@@ -232,7 +232,7 @@ class TextToSpeechService(AIModelService):
                 sampling_rate = 44000
             else:
                 sampling_rate = 16000
-            torchaudio.save(output_path, src=audio_data_int_, sample_rate=sampling_rate)
+            torchaudio.save(output_path, src=audio_data_int, sample_rate=sampling_rate)
             print(f"Saved audio file to {output_path}")
             try:
                 wandb.log({"Text to Speech": wandb.Audio(np.array(audio_data_int), caption=f'UID{axon.uid}_HOTKEY{axon.hotkey}', sample_rate=sampling_rate)})
