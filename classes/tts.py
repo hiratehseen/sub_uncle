@@ -235,7 +235,7 @@ class TextToSpeechService(AIModelService):
             torchaudio.save(output_path, src=audio_data_int, sample_rate=sampling_rate)
             print(f"Saved audio file to {output_path}")
             try:
-                wandb.log({"Text to Speech": wandb.Audio(np.array(audio_data_int), caption=f'HOTKEY{axon.hotkey}', sample_rate=sampling_rate)})
+                wandb.log({"Text to Speech": wandb.Audio(np.array(audio_data_int_), caption=f'HOTKEY{axon.hotkey}', sample_rate=sampling_rate)})
                 bt.logging.success(f"TTS Audio file uploaded to wandb successfully for Hotkey {axon.hotkey}")
             except Exception as e:
                 bt.logging.error(f"Error uploading TTS audio to wandb for Hotkey {axon.hotkey}: {e}")
