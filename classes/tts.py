@@ -234,7 +234,11 @@ class TextToSpeechService(AIModelService):
                 sampling_rate = 16000
             torchaudio.save(output_path, src=audio_data_int_, sample_rate=sampling_rate)
             print(f"Saved audio file to {output_path}")
-            wandb.log({"Text to Speech": wandb.Audio(np.array(audio_data_int), caption=f'{axon.hotkey}', sample_rate=sampling_rate)})
+            try:
+                wandb.log({"Text to Speech": wandb.Audio(np.array(audio_data_int), caption=f'UID{axon.uid}_HOTKEY{axon.hotkey}', sample_rate=sampling_rate)})
+                bt.logging.success(f"TTS Audio file uploaded to wandb successfully for UID {axon.uid} Hotkey {axon.hotkey}")
+            except Exception as e:
+                bt.logging.error(f"Error uploading TTS audio to wandb for UID {axon.uid} and Hotkey {axon.hotkey}: {e}")
             # Score the output and update the weights
             score = self.score_output(output_path, prompt)
             bt.logging.info(f"Aggregated Score from the NISQA and WER Metric: {score}")
