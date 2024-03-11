@@ -63,16 +63,8 @@ class MusicGenerationService(AIModelService):
         self.prompts = gs_dev['train']['text']
         return self.prompts
         
-    def load_local_prompts(self):
-        if os.listdir(self.ttm_source_dir):  
-            self.local_prompts = pd.read_csv(os.path.join(self.ttm_source_dir, 'ttm_prompts.csv'), header=None, index_col=False)
-            self.local_prompts = self.local_prompts[0].values.tolist()
-            bt.logging.info(f"Loaded prompts from {self.ttm_source_dir}")
-            os.remove(os.path.join(self.ttm_source_dir, 'ttm_prompts.csv'))
-        
     async def run_async(self):
         step = 0
-
         while True:
             try:
                 await self.main_loop_logic(step)

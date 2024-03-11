@@ -39,24 +39,6 @@ class VoiceCloningService(AIModelService):
         self.minimum_dendrites_per_query = 5  # Example value, adjust as needed
         self.combinations = []
         self.lock = asyncio.Lock()
-
-        ###################################### DIRECTORY STRUCTURE ###########################################
-        self.source_path = os.path.join(audio_subnet_path, "vc_source")
-        # Check if the directory exists
-        if not os.path.exists(self.source_path):
-            # If not, create the directory
-            os.makedirs(self.source_path)
-        self.target_path = os.path.join(audio_subnet_path, "vc_target")
-        # Check if the directory exists
-        if not os.path.exists(self.target_path):
-            # If not, create the directory
-            os.makedirs(self.target_path)
-        self.processed_path = os.path.join(audio_subnet_path, "vc_processed")
-        # Check if the directory exists
-        if not os.path.exists(self.processed_path):
-            # If not, create the directory
-            os.makedirs(self.processed_path)
-        ###################################### DIRECTORY STRUCTURE ###########################################
         self.filtered_axon = []
         self.filtered_axons = []
         self.response = None
@@ -114,56 +96,12 @@ class VoiceCloningService(AIModelService):
                 sample_rate = sampling_rate
                 await self.generate_voice_clone(self.text_input, clone_input, sample_rate)
 
-    async def process_local_files(self, step, sound_files):
-        if step % 25 == 0 and sound_files:
-            bt.logging.info(f"--------------------------------- Prompt and voices are being used locally for Voice Clone at Step: {step} ---------------------------------")
-            # Extract the base name (without extension) of each sound file
-            sound_file_basenames = [os.path.splitext(f)[0] for f in sound_files]
-            for filename in sound_files:
-                self.filename = filename
-                text_file = os.path.splitext(filename)[0] + ".txt"
-                text_file_path = os.path.join(self.source_path, text_file)
-                self.audio_file_path = os.path.join(self.source_path, filename)
-                new_file_path = os.path.join(self.processed_path, filename)
-                new_txt_path = os.path.join(self.processed_path, text_file)
-
-                
-                # Check if the base name of the text file is in the list of sound file base names
-                if os.path.splitext(text_file)[0] in sound_file_basenames:
-                    with open(text_file_path, 'r') as file:
-                        text_content = file.read().strip()
-                        self.text_input = text_content
-                    if len(self.text_input) > 256:
-                        bt.logging.error(f"The length of current Prompt is greater than 256. Skipping current prompt.")
-                        continue
-                    audio_content, sampling_rate = self.read_audio_file(self.audio_file_path)
-                    clone_input = audio_content.tolist()
-                    sample_rate = sampling_rate
-                    self.hf_voice_id = "local" 
-                    await self.generate_voice_clone(self.text_input,clone_input, sample_rate)
-
-                    # Move the file to the processed directory
-                    if os.path.exists(self.audio_file_path):
-                        os.rename(self.audio_file_path, new_file_path)
-                        os.rename(text_file_path, new_txt_path)
-                    else:
-                        bt.logging.warning(f"File not found: {self.audio_file_path}, it may have already been processed.")
-                    # Move the text file to the processed directory
-            
-            bt.logging.info("All files have been successfully processed from the vc_source directory.")
-            
-
-
     async def main_loop_logic(self, step):
         tasks = []
         try:
-            files = os.listdir(self.source_path)
-            sound_files = [f for f in files if f.endswith(".wav") or f.endswith(".mp3")]
-
             # Schedule both tasks to run concurrently
             huggingface_task = asyncio.create_task(self.process_huggingface_prompts(step))
-            local_files_task = asyncio.create_task(self.process_local_files(step, sound_files))
-            tasks.extend([huggingface_task, local_files_task])
+            tasks.extend([huggingface_task])
 
         except Exception as e:
             bt.logging.error(f"An error occurred in VoiceCloningService: {e}")
