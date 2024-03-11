@@ -61,7 +61,7 @@ sys.path.insert(0, audio_subnet_path)
 
 # import this repo
 from models.text_to_music import MusicGenerator
-from models.text_to_speech_models import SunoBark, TextToSpeechModels, ElevenLabsTTS, EnglishTextToSpeech
+from models.text_to_speech_models import SunoBark, ElevenLabsTTS, EnglishTextToSpeech
 from models.voice_clone import ElevenLabsClone  
 from models.bark_voice_clone import BarkVoiceCloning, ModelLoader
 import lib.protocol
