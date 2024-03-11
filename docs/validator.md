@@ -45,7 +45,7 @@ python neurons/validator.py \
     --logging.debug \
 ```
 ```bash
-pm2 start neurons/validator.py \
+pm2 start neurons/validator.py -- \
     --name {name} \
     --interpreter python3 \
     --netuid 16 \

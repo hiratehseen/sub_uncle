@@ -58,7 +58,16 @@ python neurons/miner.py \
 ```
 Start with pm2
 ```bash
-pm2 start neurons/miner.py -- --netuid 16 --subtensor.network {miner-network} --wallet.name {wallet_name} --wallet.hotkey {hotkey_name} --logging.debug --model {tts-model} --music_path {ttm-model} --clone_model {vc-model} --axon.port {machine_port}
+pm2 start neurons/miner.py -- \
+    --netuid 16 \
+    --subtensor.network {miner-network} \
+    --wallet.name {wallet_name} \
+    --wallet.hotkey {hotkey_name} \
+    --logging.debug \
+    --model {tts-model} \
+    --music_path {ttm-model} \
+    --clone_model {vc-model} \
+    --axon.port {machine_port}
 ```
 
 For running VC bark/voiceclone:
