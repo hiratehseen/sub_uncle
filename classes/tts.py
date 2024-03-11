@@ -36,37 +36,17 @@ class TextToSpeechService(AIModelService):
         self.filtered_axon = []
         self.last_updated_block = self.current_block - (self.current_block % 100)
         self.last_reset_weights_block = self.current_block
-        self.islocaltts = False
         self.p_index = 0
         self.last_run_start_time = dt.datetime.now()
         self.tao = self.metagraph.neurons[self.uid].stake.tao
         self.combinations = []
         self.lock = asyncio.Lock()
         
-        ###################################### DIRECTORY STRUCTURE ###########################################
-        self.tts_source_dir = os.path.join(audio_subnet_path, "tts_source")
-        # Check if the directory exists
-        if not os.path.exists(self.tts_source_dir):
-            # If not, create the directory
-            os.makedirs(self.tts_source_dir)
-        self.tts_target_dir = os.path.join(audio_subnet_path, 'tts_target')
-        # Check if the directory exists
-        if not os.path.exists(self.tts_target_dir):
-            # If not, create the directory
-            os.makedirs(self.tts_target_dir)
-        ###################################### DIRECTORY STRUCTURE ###########################################
-
     def load_prompts(self):
         gs_dev = load_dataset("etechgrid/Prompts_for_Voice_cloning_and_TTS")
         self.prompts = gs_dev['train']['text']
         return self.prompts
         
-    def load_local_prompts(self):
-        if os.listdir(self.tts_source_dir):  
-            self.local_prompts = pd.read_csv(os.path.join(self.tts_source_dir, 'tts_prompts.csv'), header=None, index_col=False)
-            self.local_prompts = self.local_prompts[0].values.tolist()
-            bt.logging.info(f"Loaded prompts from {self.tts_source_dir}")
-            os.remove(os.path.join(self.tts_source_dir, 'tts_prompts.csv'))
         
     def check_and_update_wandb_run(self):
         # Calculate the time difference between now and the last run start time
@@ -142,7 +122,7 @@ class TextToSpeechService(AIModelService):
         if step % 20 == 0:
             async with self.lock:
                 filtered_axons = self.get_filtered_axons_from_combinations()
-                bt.logging.info(f"--------------------------------- Prompt are being used from HuggingFace Dataset for TTS at Step: {step} ---------------------------------")
+                bt.logging.info(f"Prompt are being used from HuggingFace Dataset for TTS at Step: {step}")
                 bt.logging.info(f"______________Prompt______________: {g_prompt}")
                 responses = self.query_network(filtered_axons, g_prompt)
                 self.process_responses(filtered_axons, responses, g_prompt)
@@ -212,10 +192,7 @@ class TextToSpeechService(AIModelService):
             audio_data_int = audio_data_int_.unsqueeze(0)
 
             # Save the audio data as a .wav file
-            if self.islocaltts:
-                output_path = os.path.join(self.tts_target_dir, f'{self.p_index}_output_{axon.hotkey}.wav')
-            else:
-                output_path = os.path.join('/tmp', f'output_{axon.hotkey}.wav')
+            output_path = os.path.join('/tmp', f'output_{axon.hotkey}.wav')
             
             # Check if any WAV file with .wav extension exists and delete it
             existing_wav_files = [f for f in os.listdir('/tmp') if f.endswith('.wav')]
