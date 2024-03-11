@@ -41,6 +41,7 @@ class TextToSpeechService(AIModelService):
         self.tao = self.metagraph.neurons[self.uid].stake.tao
         self.combinations = []
         self.lock = asyncio.Lock()
+        self.response = None
         
     def load_prompts(self):
         gs_dev = load_dataset("etechgrid/Prompts_for_Voice_cloning_and_TTS")
@@ -159,6 +160,7 @@ class TextToSpeechService(AIModelService):
     def process_responses(self,filtered_axons, responses, prompt):
         for axon, response in zip(filtered_axons, responses):
             if response is not None and isinstance(response, lib.protocol.TextToSpeech):
+                self.response = response
                 self.process_response(axon, response, prompt)
         
         bt.logging.info(f"Scores after update in TTS: {self.scores}")
@@ -212,7 +214,8 @@ class TextToSpeechService(AIModelService):
             torchaudio.save(output_path, src=audio_data_int, sample_rate=sampling_rate)
             print(f"Saved audio file to {output_path}")
             try:
-                wandb.log({"Text to Speech": wandb.Audio(np.array(audio_data_int_), caption=f'HOTKEY{axon.hotkey}', sample_rate=sampling_rate)})
+                uid_in_metagraph = self.metagraph.hotkeys.index(axon.hotkey)
+                wandb.log({f"Text to Speech prompt:{self.response.text_input} ": wandb.Audio(np.array(audio_data_int_), caption=f'For UID: {uid_in_metagraph} and HotKey: {axon.hotkey}', sample_rate=sampling_rate)})
                 bt.logging.success(f"TTS Audio file uploaded to wandb successfully for Hotkey {axon.hotkey}")
             except Exception as e:
                 bt.logging.error(f"Error uploading TTS audio to wandb for Hotkey {axon.hotkey}: {e}")

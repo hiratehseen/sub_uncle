@@ -43,20 +43,9 @@ class MusicGenerationService(AIModelService):
         self.filtered_axon = []
         self.combinations = []
         self.duration = 755  #755 tokens = 15 seconds music
+        self.response = None
         self.lock = asyncio.Lock()
         
-        ###################################### DIRECTORY STRUCTURE ###########################################
-        self.ttm_source_dir = os.path.join(audio_subnet_path, "ttm_source")
-        # Check if the directory exists
-        if not os.path.exists(self.ttm_source_dir):
-            # If not, create the directory
-            os.makedirs(self.ttm_source_dir)
-        self.ttm_target_dir = os.path.join(audio_subnet_path, 'ttm_target')
-        # Check if the directory exists
-        if not os.path.exists(self.ttm_target_dir):
-            # If not, create the directory
-            os.makedirs(self.ttm_target_dir)
-        ###################################### DIRECTORY STRUCTURE ###########################################
 
     def load_prompts(self):
         gs_dev = load_dataset("etechgrid/prompts_for_TTM")
@@ -121,6 +110,7 @@ class MusicGenerationService(AIModelService):
     def process_responses(self,filtered_axons, responses, prompt):
         for axon, response in zip(filtered_axons, responses):
             if response is not None and isinstance(response, lib.protocol.MusicGeneration):
+                self.response = response
                 self.process_response(axon, response, prompt)
         
         bt.logging.info(f"Scores after update in TTM: {self.scores}")
@@ -161,16 +151,17 @@ class MusicGenerationService(AIModelService):
             audio_data_int = audio_data_int_.unsqueeze(0)
 
             # Save the audio data as a .wav file
-            if self.islocaltts:
-                output_path = os.path.join(self.ttm_target_dir, f'{self.p_index}_output_{axon.hotkey}.wav')
-            else:
-                # After saving the audio file
-                output_path = os.path.join('/tmp', f'output_music_{axon.hotkey}.wav')
-                sampling_rate = 32000
-                torchaudio.save(output_path, src=audio_data_int, sample_rate=sampling_rate)
-                bt.logging.info(f"Saved audio file to {output_path}")
-                wandb.log({"whale songs": wandb.Audio(np.array(audio_data_int_), caption=f'{axon.hotkey}', sample_rate=sampling_rate)})
+            # After saving the audio file
+            output_path = os.path.join('/tmp', f'output_music_{axon.hotkey}.wav')
+            sampling_rate = 32000
+            torchaudio.save(output_path, src=audio_data_int, sample_rate=sampling_rate)
+            bt.logging.info(f"Saved audio file to {output_path}")
 
+            try:
+                uid_in_metagraph = self.metagraph.hotkeys.index(axon.hotkey)
+                wandb.log({f"TTM prompt: {self.response.text_input}": wandb.Audio(np.array(audio_data_int_), caption=f'For UID: {uid_in_metagraph} and HotKey: {axon.hotkey}', sample_rate=sampling_rate)})
+            except Exception as e:
+                print(f"An error occurred: {e}")
 
                 # Calculate the duration
                 duration = self.get_duration(output_path)
