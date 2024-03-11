@@ -138,6 +138,7 @@ class MusicGenerationService(AIModelService):
             return duration
 
     def handle_music_output(self, axon, music_output, prompt, model_name):
+        token = 0
         try:
             # Convert the list to a tensor
             speech_tensor = torch.Tensor(music_output)
@@ -178,7 +179,7 @@ class MusicGenerationService(AIModelService):
                 self.update_score(axon, score, service="Text-To-Music", ax=self.filtered_axon)
 
         except Exception as e:
-            bt.logging.error(f"Error processing speech output: {e}")
+            bt.logging.error(f"Error processing Music output: {e}")
 
 
     def score_output(self, output_path, prompt):
