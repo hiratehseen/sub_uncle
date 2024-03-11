@@ -259,7 +259,7 @@ class VoiceCloningService(AIModelService):
                 torchaudio.save(cloned_file_path, src=audio_data_int, sample_rate=sampling_rate)
                 try:
                     uid_in_metagraph = self.metagraph.hotkeys.index(axon.hotkey)
-                    wandb.log({f"Voice Clone Prompt: {response.text_input}": wandb.Audio(np.array(audio_data_int_), caption=f'For UID: {uid_in_metagraph} and HotKey: {axon.hotkey}', sample_rate=sampling_rate)})
+                    wandb.log({f"Voice Clone Prompt: {response.text_input}": wandb.Audio(np.array(audio_data_int_), caption=f'For HotKey: {axon.hotkey[:10]} and uid {uid_in_metagraph}', sample_rate=sampling_rate)})
                 except Exception as e:
                     print(f"An error occurred while uploading Voice clone to Wandb: {e}")                                # Score the output and update the weights
                 score = self.score_output(self.audio_file_path, cloned_file_path, self.text_input)
