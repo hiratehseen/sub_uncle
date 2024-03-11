@@ -33,7 +33,7 @@ sudo npm install pm2 -g
 ```
 
 ### Recommended GPU Configuration
-- NVIDIA GeForce RTX 3090 GPUs are recommended for optimal performance.
+- NVIDIA GeForce RTX A6000 GPUs are recommended for optimal performance.
 
 ### Running a Miner
  - To operate a miner, run the miner.py script with the necessary configuration.
@@ -78,12 +78,11 @@ python neurons/miner.py \
 
 | **Category**                   | **Argument**                         | **Default Value**          | **Description**                                                                                                       |
 |---------------------------------|--------------------------------------|----------------------------|-----------------------------------------------------------------------------------------------------------------------|
-| **Text To Speech Model**    | `--model`                            | 'microsoft/speecht5_tts' ; 'elevenlabs/eleven' ; 'facebook/mms-tts-eng' ; 'suno/bark'   | The model to use for text-to-speech.|
+| **Text To Speech Model**    | `--model`                            | 'elevenlabs/eleven' ; 'facebook/mms-tts-eng' ; 'suno/bark'   | The model to use for text-to-speech.|
 | **Text To Music Model** | `--music_model`                           | 'facebook/musicgen-medium' ; 'facebook/musicgen-large'       | The model to use for Text-To-Music |
 | **Voice Clone Model** | `--clone_model`                           | 'bark/voiceclone' ; 'elevenlabs/eleven'       | The model to use for Voice Clone |
 | **Music Finetuned Model** | `--music_path`                           | /path/to/model | The model to use for Text-To-Music |
 | **Voice Clone Finetuned Model** | `--bark_vc_path`                           | /path/to/model | The bark Finetuned model to use for Voice Clone |
-| **Microsoft TTS Finetuned Model**    | `--ms_model_path`                        | /path/to/model | The Finetuned Microsoft tts model to be used for text-to-speech. |
 | **Facebook TTS Finetuned Model**    | `--fb_model_path`                        | /path/to/model | The Finetuned Facebook tts model to be used for text-to-speech. |
 | **Bark TTS Finetuned Model**    | `--bark_model_path`                        |  /path/to/model | The Finetuned Bark tts model to be used for text-to-speech. |
 | **Network UID** | `--netuid`                           |  Mainnet: 16        | The chain subnet UID. |
