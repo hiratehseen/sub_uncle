@@ -24,6 +24,7 @@ git clone https://github.com/UncleTensor/AudioSubnet.git
 cd AudioSubnet
 pip install -e fseq/
 pip install -e .
+wandb login
 ```
 **Install pm2**
 ```bash
