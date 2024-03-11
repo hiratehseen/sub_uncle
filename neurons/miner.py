@@ -17,15 +17,6 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
-'''
-Disclaimer:
-Before using Coqui TTS for commercial purposes, it's essential that you agree to the Coqui license agreement. 
-This agreement outlines the terms and conditions for commercial use.
- For more information and to ensure compliance with all legal requirements, 
- please visit their LinkedIn post here. 
- https://www.linkedin.com/posts/coqui-ai_coqui-activity-7095143706399232000--IRi
-
- '''
 
 # Bittensor Miner lib:
 
