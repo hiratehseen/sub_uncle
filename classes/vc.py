@@ -39,9 +39,27 @@ class VoiceCloningService(AIModelService):
         self.minimum_dendrites_per_query = 5  # Example value, adjust as needed
         self.combinations = []
         self.lock = asyncio.Lock()
+
+        ###################################### DIRECTORY STRUCTURE ###########################################
+        self.source_path = os.path.join(audio_subnet_path, "vc_source")
+        # Check if the directory exists
+        if not os.path.exists(self.source_path):
+            # If not, create the directory
+            os.makedirs(self.source_path)
+        self.target_path = os.path.join(audio_subnet_path, "vc_target")
+        # Check if the directory exists
+        if not os.path.exists(self.target_path):
+            # If not, create the directory
+            os.makedirs(self.target_path)
+        self.processed_path = os.path.join(audio_subnet_path, "vc_processed")
+        # Check if the directory exists
+        if not os.path.exists(self.processed_path):
+            # If not, create the directory
+            os.makedirs(self.processed_path)
+        ###################################### DIRECTORY STRUCTURE ###########################################
         self.filtered_axon = []
         self.filtered_axons = []
-        self.responses = None
+        self.response = None
         self.filename = ""
         self.audio_file_path = ""
         self.text_input = ""
@@ -64,7 +82,7 @@ class VoiceCloningService(AIModelService):
             try:
                 new_tasks = await self.main_loop_logic(step)
                 running_tasks.extend(new_tasks)
-                bt.logging.error(f"The Current step for vc is ------------------------- : {step}")
+
                 # Periodically check and clean up completed tasks
                 running_tasks = [task for task in running_tasks if not task.done()]
                 step += 1
@@ -75,7 +93,6 @@ class VoiceCloningService(AIModelService):
             except Exception as e:
                 print(f"An error occurred in VoiceCloneService: {e}")
                 traceback.print_exc()
-
     async def process_huggingface_prompts(self, step):
         if step % 45 == 0:
             async with self.lock:
@@ -97,17 +114,88 @@ class VoiceCloningService(AIModelService):
                 sample_rate = sampling_rate
                 await self.generate_voice_clone(self.text_input, clone_input, sample_rate)
 
+    async def process_local_files(self, step, sound_files):
+        if step % 25 == 0 and sound_files:
+            bt.logging.info(f"--------------------------------- Prompt and voices are being used locally for Voice Clone at Step: {step} ---------------------------------")
+            # Extract the base name (without extension) of each sound file
+            sound_file_basenames = [os.path.splitext(f)[0] for f in sound_files]
+            for filename in sound_files:
+                self.filename = filename
+                text_file = os.path.splitext(filename)[0] + ".txt"
+                text_file_path = os.path.join(self.source_path, text_file)
+                self.audio_file_path = os.path.join(self.source_path, filename)
+                new_file_path = os.path.join(self.processed_path, filename)
+                new_txt_path = os.path.join(self.processed_path, text_file)
+
+                
+                # Check if the base name of the text file is in the list of sound file base names
+                if os.path.splitext(text_file)[0] in sound_file_basenames:
+                    with open(text_file_path, 'r') as file:
+                        text_content = file.read().strip()
+                        self.text_input = text_content
+                    if len(self.text_input) > 256:
+                        bt.logging.error(f"The length of current Prompt is greater than 256. Skipping current prompt.")
+                        continue
+                    audio_content, sampling_rate = self.read_audio_file(self.audio_file_path)
+                    clone_input = audio_content.tolist()
+                    sample_rate = sampling_rate
+                    self.hf_voice_id = "local" 
+                    await self.generate_voice_clone(self.text_input,clone_input, sample_rate)
+
+                    # Move the file to the processed directory
+                    if os.path.exists(self.audio_file_path):
+                        os.rename(self.audio_file_path, new_file_path)
+                        os.rename(text_file_path, new_txt_path)
+                    else:
+                        bt.logging.warning(f"File not found: {self.audio_file_path}, it may have already been processed.")
+                    # Move the text file to the processed directory
+            
+            bt.logging.info("All files have been successfully processed from the vc_source directory.")
+            
+
+
     async def main_loop_logic(self, step):
         tasks = []
         try:
+            files = os.listdir(self.source_path)
+            sound_files = [f for f in files if f.endswith(".wav") or f.endswith(".mp3")]
+
+            # Schedule both tasks to run concurrently
             huggingface_task = asyncio.create_task(self.process_huggingface_prompts(step))
-            tasks.extend([huggingface_task ]) #local_files_task
+            local_files_task = asyncio.create_task(self.process_local_files(step, sound_files))
+            tasks.extend([huggingface_task, local_files_task])
+
         except Exception as e:
             bt.logging.error(f"An error occurred in VoiceCloningService: {e}")
             traceback.print_exc()
 
         await asyncio.sleep(0.5)  # Delay at the end of each loop iteration
         return tasks
+
+    def convert_array_to_wav(audio_data, output_filename):
+        """
+        Converts an audio data array to a .wav file.
+
+        Parameters:
+        audio_data (dict): A dictionary containing 'array' and 'sampling_rate'.
+        output_filename (str): The desired output filename for the .wav file.
+
+        Returns:
+        str: The path to the generated .wav file.
+        """
+        try:
+            # Extract array and sampling_rate from audio_data
+            audio_array = audio_data['array']
+            sampling_rate = audio_data['sampling_rate']
+
+            # Write the data to a .wav file
+            sf.write(output_filename, audio_array, sampling_rate)
+            print(f"Successfully saved the waveform to {output_filename}")
+            return output_filename
+        except KeyError as e:
+            print(f"KeyError: Make sure that 'array' and 'sampling_rate' are in audio_data. Error: {e}")
+        except Exception as e:
+            print(f"An error occurred: {e}")
 
     def read_audio_file(self, path):
         try:
@@ -117,39 +205,37 @@ class VoiceCloningService(AIModelService):
         except Exception as e:
             print(f"An error occurred while reading the audio file: {e}")
     
-    async def generate_voice_clone(self, text_input, clone_input, sample_rate, api_axon=None, input_file=None):
+
+    async def generate_voice_clone(self, text_input, clone_input, sample_rate):
         try:
-            hf_id = "API" if api_axon else self.hf_voice_id
-            filtered_axons = api_axon if api_axon else self.get_filtered_axons_from_combinations() 
-            # for ax in self.filtered_axons:
-            self.responses = self.dendrite.query(
-                filtered_axons,
-                lib.protocol.VoiceClone(text_input=text_input, clone_input=clone_input, sample_rate=sample_rate, hf_voice_id=hf_id), 
-                deserialize=True,
-                timeout=150
-            )
-            # Process the responses if needed
-            processed_vc_file = self.process_voice_clone_responses(filtered_axons, text_input, input_file)
+            self.filtered_axons = self.get_filtered_axons_from_combinations()
+            for ax in self.filtered_axons:
+                self.response = await self.dendrite.forward(
+                    ax,
+                    lib.protocol.VoiceClone(text_input=text_input, clone_input=clone_input, sample_rate=sample_rate,hf_voice_id=self.hf_voice_id),
+                    deserialize=True,
+                    timeout=130
+                )
+                # Process the responses if needed
+                self.process_voice_clone_responses(ax)
             bt.logging.info(f"Updated Scores for Voice Cloning: {self.scores}")
-            return processed_vc_file
         except Exception as e:
             print(f"An error occurred while processing the voice clone: {e}")
 
-    def process_voice_clone_responses(self,filtered_axons, text_input, input_file=None):
+    def process_voice_clone_responses(self, ax):
         try:
-            for axon, response in zip(filtered_axons, self.responses):
-                if response is not None and isinstance(response, lib.protocol.VoiceClone) and response.clone_output is not None and response.dendrite.status_code == 200:
-                    bt.logging.success(f"Received Voice Clone output from {axon.hotkey}")
-                    vc_file = self.handle_clone_output(response, axon,  prompt=text_input, input_file=input_file)
-                    return vc_file
-                elif response.dendrite.status_code != 403:
-                    self.punish(axon, service="Voice Cloning", punish_message=response.dendrite.status_message)
-                else:
-                    pass
+            if self.response is not None and isinstance(self.response, lib.protocol.VoiceClone) and self.response.clone_output is not None and self.response.dendrite.status_code == 200:
+                bt.logging.success(f"Received Voice Clone output from {ax.hotkey}")
+                self.handle_clone_output(ax, self.response)
+            elif self.response.dendrite.status_code != 403:
+                self.punish(ax, service="Voice Cloning", punish_message=self.response.dendrite.status_message)
+            else:
+                pass
+            return ax.hotkey
         except Exception as e:
             print(f"An error occurred while processing voice clone responses: {e}")
 
-    def handle_clone_output(self, response, axon, prompt=None, input_file=None):
+    def handle_clone_output(self, axon, response):
         try:
             if response is not None and response.clone_output is not None:
                 output = response.clone_output
@@ -170,15 +256,12 @@ class VoiceCloningService(AIModelService):
                 cloned_file_path = os.path.join(self.target_path, file + '_cloned_'+ axon.hotkey[:6] +'_.wav' )
                 if file is None or file == "":
                     cloned_file_path = os.path.join('/tmp', self.hf_voice_id + '_cloned_'+ axon.hotkey[:6] +'_.wav' )
-                # Save the cloned voice to a file
                 torchaudio.save(cloned_file_path, src=audio_data_int, sample_rate=sampling_rate)
-                # Upload the cloned voice to Wandb
                 try:
                     uid_in_metagraph = self.metagraph.hotkeys.index(axon.hotkey)
                     wandb.log({f"Voice Clone Prompt: {response.text_input}": wandb.Audio(np.array(audio_data_int_), caption=f'For UID: {uid_in_metagraph} and HotKey: {axon.hotkey}', sample_rate=sampling_rate)})
                 except Exception as e:
-                    print(f"An error occurred while uploading Voice clone to Wandb: {e}")                
-                # Score the output and update the weights
+                    print(f"An error occurred while uploading Voice clone to Wandb: {e}")                                # Score the output and update the weights
                 score = self.score_output(self.audio_file_path, cloned_file_path, self.text_input)
                 self.update_score(axon, score, service="Voice Cloning", ax=self.filtered_axon)
                 existing_wav_files = [f for f in os.listdir('/tmp') if f.endswith('.wav')]
