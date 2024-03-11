@@ -17,7 +17,6 @@ pip install -r requirements.txt
 python -m pip install -e . 
 wandb login
 ```
-
 ## Running a Validator
 - To operate a validator, run the validator.py script with the required command-line arguments.
 

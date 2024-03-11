@@ -16,7 +16,29 @@ pip install -r requirements.txt
 python -m pip install -e . 
 wandb login
 ```
-
+**Set Conda Enviornment**
+```bash
+mkdir -p ~/miniconda3
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda3/miniconda.sh
+bash ~/miniconda3/miniconda.sh -b -u -p ~/miniconda3
+rm -rf ~/miniconda3/miniconda.sh
+~/miniconda3/bin/conda init bash
+~/miniconda3/bin/conda init zsh
+conda create -n {conda-env} python=3.10 -y
+conda activate {conda-env}
+```
+```bash
+git clone https://github.com/UncleTensor/AudioSubnet.git
+cd AudioSubnet
+pip install -e fseq/
+pip install -e .
+```
+**Setup of pm2**
+```bash
+sudo apt install nodejs npm
+sudo npm install pm2 -g
+pm2 start neurons/validator.py --name {pm2-name} --interpreter python3 --netuid 16 --subtensor.network test --wallet.name {wallet_name} --wallet.hotkey {hotkey_name} --logging.debug
+```
 
 ### Recommended GPU Configuration
 - NVIDIA GeForce RTX 3090 GPUs are recommended for optimal performance.
