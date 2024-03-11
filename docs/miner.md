@@ -7,15 +7,6 @@ Miners in the Audio Subnetwork are responsible for generating audio from text pr
 ## Installation
 Follow these steps to install the necessary components:
 
-```bash
-git clone https://github.com/UncleTensor/AudioSubnet.git
-cd AudioSubnet
-git checkout main
-pip install -e fseq/
-pip install -r requirements.txt
-python -m pip install -e . 
-wandb login
-```
 **Set Conda Enviornment**
 ```bash
 mkdir -p ~/miniconda3
@@ -34,11 +25,10 @@ cd AudioSubnet
 pip install -e fseq/
 pip install -e .
 ```
-**Start Miner with pm2**
+**Install pm2**
 ```bash
 sudo apt install nodejs npm
 sudo npm install pm2 -g
-pm2 start neurons/validator.py --name {pm2-name} --interpreter python3 --netuid 16 --subtensor.network test --wallet.name {wallet_name} --wallet.hotkey {hotkey_name} --logging.debug
 ```
 
 ### Recommended GPU Configuration
@@ -64,6 +54,10 @@ python neurons/miner.py \
     --music_model facebook/musicgen-medium \
     --model elevenlabs/eleven \
     --axon.port {machine_port}
+```
+Start with pm2
+```bash
+pm2 start neurons/miner.py -- --netuid 16 --subtensor.network {miner-network} --wallet.name {wallet_name} --wallet.hotkey {hotkey_name} --logging.debug --model {tts-model} --music_path {ttm-model} --clone_model {vc-model} --axon.port {machine_port}
 ```
 
 For running VC bark/voiceclone:
