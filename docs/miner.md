@@ -27,13 +27,14 @@ rm -rf ~/miniconda3/miniconda.sh
 conda create -n {conda-env} python=3.10 -y
 conda activate {conda-env}
 ```
+**Install Repo**
 ```bash
 git clone https://github.com/UncleTensor/AudioSubnet.git
 cd AudioSubnet
 pip install -e fseq/
 pip install -e .
 ```
-**Setup of pm2**
+**Start Miner with pm2**
 ```bash
 sudo apt install nodejs npm
 sudo npm install pm2 -g
