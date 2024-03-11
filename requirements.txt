@@ -1,3 +1,8 @@
+torch
+torchvision
+torchaudio
+audiocraft
+laion-clap
 huggingface_hub==0.21.4 
 bittensor==6.7.0
 GPUtil==1.4.0
@@ -14,10 +19,8 @@ matplotlib==3.8.2
 uvicorn==0.22.0 
 pyngrok==7.1.2
 wandb==0.16.2
-audiocraft==1.2.0
 pydantic==1.10.13
 SQLAlchemy==1.4.51
 passlib==1.7.4 
 psycopg2-binary==2.9.9
 python-jose==3.3.0
-laion-clap==1.1.4
