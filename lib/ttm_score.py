@@ -79,7 +79,7 @@ class MusicQualityEvaluator:
             print("Consistency could not be calculated")
 
         # Normalize scores and calculate aggregate score
-        normalized_snr = snr_value / 20.0
+        normalized_snr = snr_value / 20.0 # 1
         normalized_smoothness = 1 - smoothness_score if smoothness_score is not None else 0
         normalized_consistency = (consistency_score + 1) / 2 if consistency_score is not None else 0
 
