@@ -169,15 +169,19 @@ class MusicGenerationService(AIModelService):
                 duration = self.get_duration(output_path)
                 token = duration * 50.2
                 bt.logging.info(f"The duration of the audio file is {duration} seconds.")
-            if token < self.duration:
-                bt.logging.error(f"The duration of the audio file is less than {self.duration / 50.2} seconds.Punishing the axon.")
-                self.punish(axon, service="Text-To-Music", punish_message=f"The duration of the audio file is less than {self.duration / 50.2} seconds.")
-                return
-            else:
-                # Score the output and update the weights
-                score = self.score_output(output_path, prompt)
-                bt.logging.info(f"Aggregated Score from Smoothness, SNR and Consistancy Metric: {score}")
-                self.update_score(axon, score, service="Text-To-Music", ax=self.filtered_axon)
+            # Score the output and update the weights
+            score = self.score_output(output_path, prompt)
+            try:
+                score *= 0.9 if 14.5 <= duration < 15 else 0.8 if 14 <= duration < 14.5 else 0.7 if 13.5 <= duration < 14 else 0.6 if 13 <= duration < 13.5 else 0.0 if 12.5 <= duration < 13 else score
+            except Exception as e:
+                bt.logging.error(f"Error updating the one liner code done for changing score based on duration score: {e}")
+            bt.logging.info(f"Aggregated Score from Smoothness, SNR and Consistancy Metric: {score}")
+            self.update_score(axon, score, service="Text-To-Music", ax=self.filtered_axon)
+
+            # if token < self.duration:
+            #     bt.logging.error(f"The duration of the audio file is less than {self.duration / 50.2} seconds.Punishing the axon.")
+            #     self.punish(axon, service="Text-To-Music", punish_message=f"The duration of the audio file is less than {self.duration / 50.2} seconds.")
+            #     return
 
         except Exception as e:
             bt.logging.error(f"Error processing Music output: {e}")
