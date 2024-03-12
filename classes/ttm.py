@@ -165,10 +165,10 @@ class MusicGenerationService(AIModelService):
             except Exception as e:
                 bt.logging.error(f"Error uploading TTM audio file to wandb: {e}")
 
-                # Calculate the duration
-                duration = self.get_duration(output_path)
-                token = duration * 50.2
-                bt.logging.info(f"The duration of the audio file is {duration} seconds.")
+            # Calculate the duration
+            duration = self.get_duration(output_path)
+            token = duration * 50.2
+            bt.logging.info(f"The duration of the audio file is {duration} seconds.")
             # Score the output and update the weights
             score = self.score_output(output_path, prompt)
             try:
