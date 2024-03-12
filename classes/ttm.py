@@ -136,6 +136,21 @@ class MusicGenerationService(AIModelService):
             rate = f.getframerate()
             duration = frames / float(rate)
             return duration
+        
+    def conditioned_score(score, duration):
+        conditions = [
+            (lambda d: 14.5 <= d < 15, 0.9),
+            (lambda d: 14 <= d < 14.5, 0.8),
+            (lambda d: 13.5 <= d < 14, 0.7),
+            (lambda d: 13 <= d < 13.5, 0.6),
+            (lambda d: 12.5 <= d < 13, 0.0),
+            # (lambda d: d >= 15, 1.0)  # Add this line
+        ]
+        for condition, multiplier in conditions:
+            if condition(duration):
+                return score * multiplier
+        return score  # If none of the conditions were met
+
 
     def handle_music_output(self, axon, music_output, prompt, model_name):
         token = 0
@@ -171,18 +186,17 @@ class MusicGenerationService(AIModelService):
             bt.logging.info(f"The duration of the audio file is {duration} seconds.")
             # Score the output and update the weights
             score = self.score_output(output_path, prompt)
+            bt.logging.info(f"Score output after analysing the output file: {score}")
             try:
-                score *= 0.9 if 14.5 <= duration < 15 else 0.8 if 14 <= duration < 14.5 else 0.7 if 13.5 <= duration < 14 else 0.6 if 13 <= duration < 13.5 else 0.0 if 12.5 <= duration < 13 else 0
-                bt.logging.info(f"Score updated based on short duration than the required by the client: {score}")
+                if duration < 15:
+                    score = self.conditioned_score(score, duration)
+                    bt.logging.info(f"Score updated based on short duration than the required by the client: {score}")
+                else:
+                    bt.logging.info(f"Duration is greater than 15 seconds. No need to update the score.")
             except Exception as e:
                 bt.logging.error(f"Error updating the one liner code done for changing score based on duration score: {e}")
             bt.logging.info(f"Aggregated Score from Smoothness, SNR and Consistancy Metric: {score}")
             self.update_score(axon, score, service="Text-To-Music", ax=self.filtered_axon)
-
-            # if token < self.duration:
-            #     bt.logging.error(f"The duration of the audio file is less than {self.duration / 50.2} seconds.Punishing the axon.")
-            #     self.punish(axon, service="Text-To-Music", punish_message=f"The duration of the audio file is less than {self.duration / 50.2} seconds.")
-            #     return
 
         except Exception as e:
             bt.logging.error(f"Error processing Music output: {e}")
