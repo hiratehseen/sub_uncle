@@ -3494,10 +3494,11 @@ def calculate_audio_quality_scores(data):
 
         # Ensure the final score is within 0-1
         data['composite_score'] = data['composite_score'].clip(0, 1)
+        # data['composite_score'] *= 0.7
 
         # Round the composite score to 3 decimal places
         data['composite_score'] = data['composite_score'].round(3)
-
+        bt.logging.success(f"_____________________________ Composite Score _____________________________: {data['composite_score']}")
         return data['composite_score'][0]
 
     except Exception as e:
