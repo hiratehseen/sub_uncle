@@ -137,7 +137,7 @@ class MusicGenerationService(AIModelService):
             duration = frames / float(rate)
             return duration
         
-    def conditioned_score(score, duration):
+    def score_adjustment(score, duration):
         conditions = [
             (lambda d: 14.5 <= d < 15, 0.9),
             (lambda d: 14 <= d < 14.5, 0.8),
@@ -189,7 +189,7 @@ class MusicGenerationService(AIModelService):
             bt.logging.info(f"Score output after analysing the output file: {score}")
             try:
                 if duration < 15:
-                    score = self.conditioned_score(score, duration)
+                    score = self.score_adjustment(score, duration)
                     bt.logging.info(f"Score updated based on short duration than the required by the client: {score}")
                 else:
                     bt.logging.info(f"Duration is greater than 15 seconds. No need to update the score.")
