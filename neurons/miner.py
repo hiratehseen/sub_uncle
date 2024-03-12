@@ -65,9 +65,6 @@ def get_config():
     parser.add_argument(
         "--model", default='', help="The model to be used for text-to-speech." 
     )
-    # parser.add_argument(
-    #     "--ms_model_path", default=None , help="The microsoft tts model to be used for text-to-speech." 
-    # )
     parser.add_argument(
         "--fb_model_path", default=None , help="The facebook tts model to be used for text-to-speech." 
     )
@@ -138,11 +135,6 @@ def main(config):
     # Check the supplied model and log the appropriate information.
     # =========================================== Text To Speech model selection ============================================ 
     try:
-        # if config.ms_model_path or config.model == "microsoft/speecht5_tts":
-        #     model_path = config.ms_model_path if config.ms_model_path else config.model
-        #     tts_models = TextToSpeechModels(model_path=model_path)
-        #     bt.logging.info(f"Using the Microsoft TTS model from: {model_path}")
-
         if config.fb_model_path or config.model == "facebook/mms-tts-eng":
             model_path = config.fb_model_path if config.fb_model_path else config.model
             tts_models = EnglishTextToSpeech(model_path=model_path)
@@ -465,8 +457,6 @@ def main(config):
 
     def ProcessSpeech(synapse: lib.protocol.TextToSpeech) -> lib.protocol.TextToSpeech:
         bt.logging.success("The prompt received from validator!")
-        # if config.ms_model_path or config.model == "microsoft/speecht5_tts":
-        #     speech = tts_models.generate_speech(synapse.text_input)
         if config.model == "elevenlabs/eleven":
             speech = tts_models.generate_speech(synapse.text_input)
         elif config.bark_model_path or config.model == "suno/bark":
