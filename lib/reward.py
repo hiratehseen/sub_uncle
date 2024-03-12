@@ -3471,12 +3471,12 @@ def calculate_audio_quality_scores(data):
 
         # Define the weights for each metric
         weights = {
-            'mos_pred': 0.16,  
-            'noi_pred': 0.16,
+            'mos_pred': 0.26,  
+            'noi_pred': 0.40,
             'dis_pred': 0.06,
             'col_pred': 0.06,
             'loud_pred': 0.06,
-            'word_error_rate': 0.50  
+            'word_error_rate': 0.16  
         }
 
         # Normalize and invert scores as necessary
